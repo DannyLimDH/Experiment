@@ -73,6 +73,7 @@ def main():
         model=model,
         tokenizer=tokenizer,
         device=0,
+        return_full_text=False,
     )
 
     results = []
@@ -97,7 +98,14 @@ def main():
         )
 
         for item, resp in zip(batch, outputs):
-            cands = [r["generated_text"].strip() for r in resp]
+            cands = []
+            for r in resp:
+                text = r["generated_text"].strip()
+                if "Final output:" in text:
+                    text = text.split("Final output:", 1)[1].strip()
+                if text.startswith("Response:"):
+                    text = text[len("Response:"):].strip()
+                cands.append(text)
             results.append({"input": item["input"], "candidates": cands})
             processed += 1
 
